@@ -1,0 +1,218 @@
+<html>
+<body>
+
+<script type='text/javascript'>
+
+// main
+
+function InventoryTest()
+{
+	this.main = function()
+	{
+		var itemDefns = ItemDefn.Instances;
+
+		var holder = new Holder
+		(
+			"Inventory",
+			[
+				new Item(itemDefns.Armor),
+				new Item(itemDefns.Boots),
+				new Item(itemDefns.Coins),
+				new Item(itemDefns.Gem),
+				new Item(itemDefns.Gloves),
+				new Item(itemDefns.Ring),
+				new Item(itemDefns.Sword),
+				new Item(itemDefns.Scroll),
+			]
+		);
+
+		var holderAsHTMLElement = holder.htmlElementBuild();
+
+		document.body.appendChild(holderAsHTMLElement);
+	}	
+}
+
+// classes
+
+function Holder(name, items)
+{
+	this.name = name;
+	this.items = items;
+}
+{
+	// instance methods
+
+	Holder.prototype.itemDrop = function(item)
+	{
+		var htmlElementForHolder = this.htmlElement;
+		var table = htmlElementForHolder.getElementsByTagName("table")[0];
+		var htmlElementForItem = item.htmlElement;
+
+		table.removeChild(htmlElementForItem);
+
+		alert(item.defn.name + " dropped!");
+	}
+
+	Holder.prototype.itemUse = function(item)
+	{
+		item.use(this);
+	}
+
+	// html
+
+	Holder.prototype.htmlElementBuild = function()
+	{
+		var returnValue = document.createElement("div");
+		returnValue.style.width = "170px";
+		returnValue.style.height = "170px";
+		returnValue.style.overflow = "auto";
+		returnValue.style.border = "1px solid";
+
+		var table = document.createElement("table");
+
+		for (var i = 0; i < this.items.length; i++)
+		{
+			var item = this.items[i];
+
+			item.holder = this;
+
+			var htmlElementForItem = item.htmlElementBuild();
+
+			table.appendChild(htmlElementForItem);
+		}
+
+		returnValue.appendChild(table);
+
+		returnValue.holder = this;
+		this.htmlElement = returnValue;
+
+		return returnValue;
+	}
+}
+
+function Item(defn)
+{
+	this.defn = defn;
+}
+{
+	// instance methods
+
+	Item.prototype.use = function(holder)
+	{
+		this.defn.use(holder, this);
+	}
+
+	// html
+
+	Item.prototype.htmlElementBuild = function()
+	{
+		var tr = document.createElement("tr");
+
+		var td = document.createElement("td");
+		td.innerHTML = this.defn.name;
+		tr.appendChild(td);
+
+		td = document.createElement("td");
+		var buttonUse = document.createElement("button");
+		buttonUse.innerHTML = "Use";
+		buttonUse.onclick = this.htmlElementHandleClickEventUse;
+		td.appendChild(buttonUse);
+		tr.appendChild(td);
+
+		td = document.createElement("td");
+		var buttonDrop = document.createElement("button");
+		buttonDrop.innerHTML = "Drop";
+		buttonDrop.onclick = this.htmlElementHandleClickEventDrop;
+		td.appendChild(buttonDrop);
+		tr.appendChild(td);
+
+		tr.item = this;
+		this.htmlElement = tr;
+
+		return tr;
+	}
+
+	Item.prototype.htmlElementHandleClickEventDrop = function(event)
+	{
+		var item = event.target.parentElement.parentElement.item;
+		var holder = item.holder;
+
+		holder.itemDrop(item);
+	}
+
+	Item.prototype.htmlElementHandleClickEventUse = function(event)
+	{
+		var item = event.target.parentElement.parentElement.item;
+		var holder = item.holder;
+
+		holder.itemUse(item);
+	}
+}
+
+function ItemDefn(name, image, use)
+{
+	this.name = name;
+	this.image = image;
+	this.use = use;
+}
+{
+	ItemDefn.Instances = new ItemDefn_Instances();
+
+	function ItemDefn_Instances()
+	{
+		var use = function(holder, item)
+		{
+			alert(item.defn.name + " used!");
+		}
+
+		this.Armor 	= new ItemDefn("Armor", new Image("Armor.png"), use);
+		this.Boots 	= new ItemDefn("Boots", new Image("Boots.png"), use);
+		this.Coins 	= new ItemDefn("Coins", new Image("Coins.png"), use);
+		this.Gem 	= new ItemDefn("Gem", new Image("Gem.png"), use);
+		this.Gloves 	= new ItemDefn("Gloves", new Image("Gloves.png"), use);
+		this.Helmet 	= new ItemDefn("Helmet", new Image("Helmet.png"), use);
+		this.Key 	= new ItemDefn("Key", new Image("Key.png"), use);
+		this.Potion 	= new ItemDefn("Potion", new Image("Potion.png"), use);
+		this.Ring 	= new ItemDefn("Ring", new Image("Ring.png"), use);
+		this.Sword 	= new ItemDefn("Sword", new Image("Sword.png"), use);
+		this.Shield 	= new ItemDefn("Sword", new Image("Shield.png"), use);
+		this.Scroll 	= new ItemDefn("Scroll", new Image("Scroll.png"), use);
+
+		this._All = 
+		[
+			this.Armor,
+			this.Boots,
+			this.Coins,
+			this.Gem,
+			this.Gloves,
+			this.Helmet,
+			this.Key,
+			this.Potion,
+			this.Ring,
+			this.Sword,
+			this.Shield,
+			this.Scroll,
+		];
+
+		for (var i = 0; i < this._All.length; i++)
+		{
+			var itemDefn = this._All[i];
+
+			this._All[itemDefn.name] = itemDefn;
+		}
+	}
+}
+
+function Image(filePath)
+{
+	this.filePath = filePath;
+}
+
+// run
+
+new InventoryTest().main();
+
+</script>
+
+</body>
+</html>
